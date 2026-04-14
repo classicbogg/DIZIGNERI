@@ -4,7 +4,21 @@ from django.urls import path
 from django.utils import timezone
 from openpyxl import Workbook
 
-from .models import Record
+from .models import Record, TeamApplication, TeamMember
+
+
+class TeamMemberInline(admin.TabularInline):
+    model = TeamMember
+    extra = 0
+    readonly_fields = ("full_name", "is_captain")
+
+
+@admin.register(TeamApplication)
+class TeamApplicationAdmin(admin.ModelAdmin):
+    list_display = ("id", "team_name", "course", "status", "date_submitted")
+    list_filter = ("status", "date_submitted")
+    search_fields = ("team_name", "course", "members__full_name")
+    inlines = (TeamMemberInline,)
 
 
 @admin.register(Record)
@@ -30,8 +44,7 @@ class RecordAdmin(admin.ModelAdmin):
         sheet = workbook.active
         sheet.title = "Records"
 
-        headers = ["ID", "Имя", "Email", "Телефон", "Комментарий", "Активен", "Создан", "Обновлен"]
-        sheet.append(headers)
+@@ -35,26 +49,26 @@ class RecordAdmin(admin.ModelAdmin):
 
         queryset = Record.objects.all().order_by("id")
         for record in queryset.iterator():

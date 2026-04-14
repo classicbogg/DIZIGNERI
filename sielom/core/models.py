@@ -31,22 +31,27 @@ class Record(models.Model):
     def __str__(self):
         return f"{self.name} <{self.email}>"
 
+
 class TeamApplication(models.Model):
     team_name = models.CharField(max_length=255)
     course = models.CharField(max_length=255)
     status = models.CharField(max_length=50, default="pending")
     date_submitted = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ("-date_submitted",)
+
     def __str__(self):
         return self.team_name
 
 
 class TeamMember(models.Model):
-    team_application = models.ForeignKey(TeamApplication, on_delete=models.CASCADE, related_name="members")
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-    email = models.EmailField()
+    team_application = models.ForeignKey(
+        TeamApplication, on_delete=models.CASCADE, related_name="members"
+    )
+    full_name = models.CharField(max_length=255)
     is_captain = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name} ({'Captain' if self.is_captain else 'Member'})"
+        role = "Captain" if self.is_captain else "Member"
+        return f"{self.full_name} ({role})"

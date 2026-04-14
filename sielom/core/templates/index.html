@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
+{% load static %}
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,7 +8,7 @@
   <style>
     @font-face {
       font-family: "ONDER";
-      src: url("{% static 'fonts/ONDER-REGULAR.TTF' %}") format("truetype");
+      src: url("{% static 'ONDER-REGULAR.TTF' %}") format("truetype");
       font-weight: 400;
       font-style: normal;
       font-display: swap;
@@ -796,7 +797,7 @@
     <div class="burst-main"><div class="inner"></div></div>
 
     <div class="badge top">WELCOME</div>
-    <a href="registration.html" class="badge bottom cta-button">Перейти к регистрации</a>
+    <a href="{% url 'registration' %}" class="badge bottom cta-button">Перейти к регистрации</a>
 
     <section class="center">
       <div class="word-stage">

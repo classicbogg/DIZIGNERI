@@ -28,13 +28,10 @@ class AdminExportTests(TestCase):
 
 class ApiAndHealthTests(TestCase):
     def test_healthcheck(self):
-        response = self.client.get("/")
+        response = self.client.get("/health/")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json().get("status"), "ok")
 
     def test_api_requires_auth(self):
         response = self.client.get("/api/records/")
-        self.assertIn(response.status_code, (401, 403))
-
-
-        
+        self.assertIn(response.status_code, (401, 403))    

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
+{% load static %}
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,7 +8,7 @@
   <style>
     @font-face {
       font-family: "ONDER";
-      src: url("{% static 'fonts/ONDER-REGULAR.TTF' %}") format("truetype");
+      src: url("{% static 'ONDER-REGULAR.TTF' %}") format("truetype");
       font-weight: 400;
       font-style: normal;
       font-display: swap;
@@ -1337,7 +1338,7 @@
           <svg viewBox="0 0 24 24"><path d="M9 7.5v8.5a3.5 3.5 0 1 0 7 0V7a5 5 0 1 0-10 0v10a6.5 6.5 0 1 0 13 0V9"></path></svg>
         </div>
 
-        <form id="registrationForm" class="form-grid" action="/api/register-team" method="post">
+        <form id="registrationForm" class="form-grid" action="{% url 'register_team' %}" method="post">
           <div class="top-fields">
             <div class="field">
               <label for="teamName">Название команды</label>
@@ -1445,7 +1446,7 @@
           </section>
 
           <div class="actions">
-            <a class="back-link" href="index.html">Назад</a>
+            <a class="back-link" href="{% url 'home' %}">Назад</a>
             <button class="submit-btn" type="submit">Отправить заявку</button>
           </div>
 
@@ -1593,11 +1594,30 @@
         members,
       };
 
-      console.log('Payload for backend:', payload);
-      if (status) {
-        status.textContent = 'Заявка заполнена корректно.';
-      }
-      openSuccessModal();
+      fetch(form.action, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+        .then(async (response) => {
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            throw new Error(data.detail || 'Ошибка отправки заявки.');
+          }
+          if (status) {
+            status.textContent = data.detail || 'Заявка успешно отправлена.';
+          }
+          form.reset();
+          syncCaptainState();
+          openSuccessModal();
+        })
+        .catch((error) => {
+          if (status) {
+            status.textContent = error.message;
+          }
+        });
     });
 
     if (document.fonts && document.fonts.ready) {
