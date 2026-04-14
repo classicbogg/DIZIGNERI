@@ -44,7 +44,16 @@ class RecordAdmin(admin.ModelAdmin):
         sheet = workbook.active
         sheet.title = "Records"
 
-@@ -35,26 +49,26 @@ class RecordAdmin(admin.ModelAdmin):
+        sheet.append([
+            "ID",
+            "Имя",
+            "Email",
+            "Телефон",
+            "Комментарий",
+            "Активна",
+            "Создано",
+            "Обновлено",
+        ])
 
         queryset = Record.objects.all().order_by("id")
         for record in queryset.iterator():

@@ -2,12 +2,34 @@
 
 Django-бэкенд с админкой, API, регистрационной формой команды и экспортом в `.xlsx`.
 
+
+## 0) Быстрое восстановление если проект не стартует
+
+```bash
+# 1) убедиться, что вы в актуальной ветке и код свежий
+git branch --show-current
+git pull
+
+# 2) пересоздать окружение с нуля (на Windows это часто лечит проблемы)
+rm -rf .venv
+python3 -m venv .venv
+source .venv/Scripts/activate   # Git Bash on Windows
+pip install -r requirements.txt
+
+# 3) подготовить env и БД
+cp .env.example .env
+python manage.py migrate
+python manage.py runserver 127.0.0.1:8000
+```
+
+Если падает на `debug_toolbar` — просто установите зависимости ещё раз в активном venv.
+
 ## 1) Локальный запуск (приоритетный сценарий)
 
 ```bash
 cd sielom
 python3 -m venv .venv
-source .venv/Scripts/activate           # Windows Git Bash: source .venv/Scripts/activate
+source .venv/bin/activate           # Windows Git Bash: source .venv/Scripts/activate
 pip install -r requirements.txt
 cp .env.example .env
 python manage.py migrate
@@ -20,6 +42,36 @@ python manage.py runserver 127.0.0.1:8000
 - `http://127.0.0.1:8000/registration/` — регистрация (`registration.html`)
 - `http://127.0.0.1:8000/health/` — healthcheck JSON
 - `http://127.0.0.1:8000/admin/` — админка
+
+
+### Windows Git Bash (важно про активацию venv)
+
+На Windows в Git Bash активатор обычно лежит в `Scripts`, а не в `bin`:
+
+```bash
+python3 -m venv .venv
+source .venv/Scripts/activate
+```
+
+Если `source .venv/bin/activate` пишет `No such file or directory` — это нормально для Windows.
+
+### Если видите `SyntaxError` с текстом вида `@@ -35,26 +49,26 @@`
+
+Это означает, что в файл случайно попали строки из diff/patch (артефакт неудачного ручного редактирования).
+
+Быстрое исправление:
+
+```bash
+git pull
+# или точечно восстановить файл
+git checkout -- sielom/core/admin.py
+```
+
+После этого снова:
+
+```bash
+python manage.py migrate
+```
 
 ## 2) Что уже интегрировано
 

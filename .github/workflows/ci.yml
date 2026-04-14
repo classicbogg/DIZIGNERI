@@ -16,6 +16,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r sielom/requirements.txt
+      - name: Check for conflict/diff markers
+        run: |
+          if rg -n "^(<<<<<<<|=======|>>>>>>>|@@ )" sielom; then
+            echo "Found unresolved merge/diff markers";
+            exit 1;
+          fi
       - name: Run migrations check
         run: |
           cd sielom
