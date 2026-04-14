@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DIZIGNERI — Comic Burst</title>
+  <style>
+    @font-face {
+      font-family: "ONDER";
+      src: url("{% static 'fonts/ONDER-REGULAR.TTF' %}") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root {
+      --bg-a: #16d7ff;
+      --bg-b: #8af58f;
+      --ink: #14233a;
+      --white: #ffffff;
+      --pink: #ff79bb;
+      --yellow: #ffe25b;
+      --mint: #b9fff2;
+      --cream: #fff8d2;
+      --shadow-flat: 0 12px 0 rgba(20, 35, 58, 0.14);
+      --shadow-soft: 0 24px 40px rgba(20, 35, 58, 0.16);
+      --word-fit-scale: 1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      overflow: hidden;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.18), transparent 18%),
+        linear-gradient(135deg, var(--bg-a) 0%, var(--bg-b) 100%);
+      position: relative;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(var(--ink) 1.7px, transparent 1.7px);
+      background-size: 18px 18px;
+      opacity: 0.16;
+      pointer-events: none;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(255,255,255,0.22), transparent 48%);
+      pointer-events: none;
+    }
+
+    .scene {
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .blob {
+      position: absolute;
+      border: 8px solid var(--ink);
+      border-radius: 999px;
+      box-shadow: 0 16px 0 rgba(20,35,58,0.12);
+      animation: blobFloat 8s ease-in-out infinite;
+      z-index: 1;
+    }
+
+    .blob.left {
+      top: -4rem;
+      left: -4rem;
+      width: 16rem;
+      height: 16rem;
+      background: var(--pink);
+    }
+
+    .blob.right {
+      right: -3rem;
+      bottom: -5rem;
+      width: 18rem;
+      height: 18rem;
+      background: var(--yellow);
+      animation-duration: 9s;
+      animation-direction: reverse;
+    }
+
+    .ring {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 78vmin;
+      height: 78vmin;
+      transform: translate(-50%, -50%);
+      border: 8px dashed rgba(255,255,255,0.54);
+      border-radius: 50%;
+      animation: spin 38s linear infinite;
+      z-index: 1;
+    }
+
+    .burst-main {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: min(90vmin, 1120px);
+      height: min(62vmin, 760px);
+      transform: translate(-50%, -50%) rotate(-2deg);
+      z-index: 2;
+    }
+
+    .burst-main::before,
+    .burst-main::after,
+    .burst-main .inner {
+      content: "";
+      position: absolute;
+      inset: 0;
+      clip-path: polygon(50% 0%,58% 12%,72% 5%,74% 19%,89% 12%,84% 28%,100% 32%,89% 44%,98% 58%,82% 60%,86% 77%,70% 72%,66% 90%,50% 79%,34% 90%,30% 72%,14% 77%,18% 60%,2% 58%,11% 44%,0% 32%,16% 28%,11% 12%,26% 19%,28% 5%,42% 12%);
+      border-radius: 18%;
+    }
+
+    .burst-main::before {
+      background: #ffe500;
+      border: 8px solid var(--ink);
+      box-shadow: 0 18px 0 rgba(20,35,58,0.16), 0 34px 60px rgba(20,35,58,0.18);
+    }
+
+    .burst-main::after {
+      inset: 5%;
+      background: rgba(255, 180, 94, 0.26);
+    }
+
+    .burst-main .inner {
+      inset: 11%;
+      background: rgba(255,255,255,0.20);
+    }
+
+    .mini-burst {
+      position: absolute;
+      width: 5rem;
+      height: 5rem;
+      border: 5px solid var(--ink);
+      border-radius: 18px;
+      clip-path: polygon(50% 0%,58% 18%,76% 10%,74% 29%,96% 27%,82% 43%,100% 50%,82% 57%,96% 73%,74% 71%,76% 90%,58% 82%,50% 100%,42% 82%,24% 90%,26% 71%,4% 73%,18% 57%,0% 50%,18% 43%,4% 27%,26% 29%,24% 10%,42% 18%);
+      box-shadow: 0 10px 0 rgba(20,35,58,0.12);
+      animation: pulseWobble 4.8s ease-in-out infinite;
+      z-index: 1;
+    }
+
+    .mini-burst.b1 { left: 7%; top: 9%; background: #fff; }
+    .mini-burst.b2 { right: 8%; top: 11%; background: #ff8fc9; animation-delay: -1s; }
+    .mini-burst.b3 { left: 10%; bottom: 13%; background: #fff4a3; animation-delay: -1.8s; }
+    .mini-burst.b4 { right: 10%; bottom: 11%; background: #baf6ff; animation-delay: -0.7s; }
+
+    .sticker,
+    .icon-float,
+    .badge {
+      position: absolute;
+      animation: stickerFloat 6s ease-in-out infinite;
+    }
+
+    .sticker {
+      z-index: 4;
+    }
+
+    .sticker-card {
+      width: 98px;
+      height: 98px;
+      border: 5px solid var(--ink);
+      border-radius: 30px;
+      display: grid;
+      place-items: center;
+      box-shadow: var(--shadow-flat), var(--shadow-soft);
+      background: #fff;
+    }
+
+    .sticker svg,
+    .icon-float svg {
+      width: 52px;
+      height: 52px;
+      display: block;
+    }
+
+    .s1 { left: 8%; top: 17%; }
+    .s2 { right: 10%; top: 18%; animation-delay: -1.2s; }
+    .s3 { left: 9%; bottom: 16%; animation-delay: -0.8s; }
+    .s4 { right: 9%; bottom: 16%; animation-delay: -1.6s; }
+    .s5 { left: 4%; top: 50%; transform: translateY(-50%); animation-delay: -0.5s; }
+    .s6 { right: 4%; top: 50%; transform: translateY(-50%); animation-delay: -1.8s; }
+    .s7 { left: 15%; top: 12%; animation-delay: -0.9s; }
+    .s8 { right: 15%; top: 12%; animation-delay: -1.4s; }
+
+    .s2 .sticker-card { background: var(--yellow); }
+    .s3 .sticker-card { background: #ffb0d3; }
+    .s4 .sticker-card { background: var(--mint); }
+    .s7 .sticker-card,
+    .s8 .sticker-card { background: #ffffff; }
+
+    .i1 { left: 18%; top: 34%; animation-delay: -0.9s; z-index: 3; }
+    .i2 { right: 18%; top: 35%; animation-delay: -1.4s; z-index: 3; }
+
+    .badge {
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid var(--ink);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--ink);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      box-shadow: 0 10px 0 rgba(20,35,58,0.12);
+      white-space: nowrap;
+      user-select: none;
+      z-index: 12;
+    }
+
+    .badge.top {
+      top: calc(50% - min(24vmin, 14rem));
+      padding: 0.8rem 1.4rem;
+      font-size: clamp(0.85rem, 1.6vw, 1.25rem);
+      animation: badgeTop 6.2s ease-in-out infinite;
+    }
+
+    .badge.bottom {
+      top: calc(50% + min(22vmin, 12rem));
+      padding: 0.7rem 1.2rem;
+      font-size: clamp(0.75rem, 1.3vw, 1rem);
+      animation: badgeBottom 5.8s ease-in-out infinite;
+    }
+
+  .cta-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 380px;
+  min-height: 78px;
+  padding: 1.15rem 2.6rem;
+  text-decoration: none;
+  cursor: pointer;
+  background: #ffffff;
+  color: var(--ink);
+  font-size: clamp(1rem, 1.6vw, 1.25rem);
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  border: 5px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 0 12px 0 rgba(20,35,58,0.14), 0 22px 34px rgba(20,35,58,0.14);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  pointer-events: auto;
+}
+
+    .cta-button:hover {
+      transform: translateX(-50%) translateY(-4px) scale(1.03);
+      background: #fff7b8;
+      box-shadow: 0 16px 0 rgba(20,35,58,0.14), 0 28px 40px rgba(20,35,58,0.18);
+    }
+
+    .cta-button:active {
+      transform: translateX(-50%) translateY(1px) scale(0.995);
+      box-shadow: 0 8px 0 rgba(20,35,58,0.14), 0 16px 24px rgba(20,35,58,0.14);
+    }
+
+    .cta-button:focus-visible {
+      outline: 3px solid rgba(255,255,255,0.95);
+      outline-offset: 4px;
+    }
+
+    .center {
+      position: relative;
+      z-index: 5;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 1.5rem;
+      pointer-events: none;
+    }
+
+    .word-stage {
+      width: min(92vw, 1580px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .word-fit {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transform: scale(var(--word-fit-scale));
+      transform-origin: center center;
+      will-change: transform;
+    }
+
+    .word-shadow,
+    .word {
+      font-family: "ONDER", Impact, Arial Black, Arial, sans-serif;
+      letter-spacing: 0.005em;
+      line-height: 0.82;
+    }
+
+    .word-shadow {
+      position: absolute;
+      font-size: clamp(74px, 16vw, 240px);
+      text-transform: uppercase;
+      color: rgba(20,35,58,0.18);
+      transform: translate(0.05em, 0.08em);
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    .word-plate {
+      position: absolute;
+      inset: -2rem -3.2rem;
+      border: 5px solid var(--ink);
+      border-radius: 50px;
+      background: rgba(255,255,255,0.52);
+      animation: plateMove 7s ease-in-out infinite;
+      z-index: -1;
+      box-shadow: 0 16px 32px rgba(20,35,58,0.08);
+    }
+
+    .word {
+      position: relative;
+      font-size: clamp(74px, 16vw, 240px);
+      text-transform: uppercase;
+      white-space: nowrap;
+      color: #fffdf6;
+      -webkit-text-stroke: 14px var(--ink);
+      paint-order: stroke fill;
+      text-shadow: 0 10px 0 rgba(20,35,58,0.14), 0 20px 30px rgba(20,35,58,0.16);
+      user-select: none;
+    }
+
+    .letter {
+      display: inline-block;
+      transform-origin: center bottom;
+    }
+
+    .letter.jump {
+      animation: letterJump 0.34s cubic-bezier(0.2, 0.85, 0.2, 1);
+    }
+
+    .icon-float svg {
+      width: 78px;
+      height: 78px;
+      filter: drop-shadow(0 10px 0 rgba(20,35,58,0.12));
+    }
+
+    .white-stroke,
+    .icon-stroke {
+      stroke: var(--ink);
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .figma-stroke {
+      stroke: var(--ink);
+      stroke-width: 1.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    @keyframes blobFloat {
+      0%,100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(12px) rotate(8deg); }
+    }
+
+    @keyframes spin {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    @keyframes pulseWobble {
+      0%,100% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.06) rotate(4deg); }
+    }
+
+    @keyframes stickerFloat {
+      0%,100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-10px) rotate(5deg); }
+    }
+
+    @keyframes badgeTop {
+      0%,100% { transform: translateX(-50%) translateY(0) rotate(-2deg); }
+      50% { transform: translateX(-50%) translateY(-8px) rotate(2deg); }
+    }
+
+    @keyframes badgeBottom {
+      0%,100% { transform: translateX(-50%) translateY(0) rotate(2deg); }
+      50% { transform: translateX(-50%) translateY(8px) rotate(-2deg); }
+    }
+
+    @keyframes plateMove {
+      0%,100% { transform: rotate(-1deg) translateY(0); }
+      50% { transform: rotate(0.8deg) translateY(-3px); }
+    }
+
+    @keyframes letterJump {
+      0% { transform: translateY(0) rotate(0deg) scale(1,1); }
+      35% { transform: translateY(calc(var(--lift, 10px) * -1)) rotate(var(--tilt, 0deg)) scale(0.98,1.04); }
+      100% { transform: translateY(0) rotate(0deg) scale(1,1); }
+    }
+
+    @media (max-width: 980px) {
+      .icon-float svg { width: 62px; height: 62px; }
+      .sticker-card { width: 84px; height: 84px; }
+      .sticker svg { width: 44px; height: 44px; }
+      .cta-button { min-width: 240px; padding: 0.9rem 1.4rem; }
+      .word,
+      .word-shadow { -webkit-text-stroke: 6px var(--ink); }
+    }
+
+    @media (max-width: 720px) {
+      .burst-main { width: 94vmin; height: 66vmin; }
+      .ring { width: 90vmin; height: 90vmin; }
+      .icon-float.i1,
+      .icon-float.i2,
+      .badge.top { display: none; }
+      .badge.bottom { top: calc(50% + 7rem); }
+      .cta-button { min-width: 210px; }
+      .word-plate { inset: -0.8rem -1rem; border-radius: 24px; border-width: 4px; }
+      .word,
+      .word-shadow { -webkit-text-stroke: 5px var(--ink); }
+    }
+
+    @media (max-width: 560px) {
+      .sticker-card { width: 68px; height: 68px; border-radius: 22px; }
+      .sticker svg { width: 36px; height: 36px; }
+      .mini-burst { width: 4.4rem; height: 4.4rem; }
+      .s7,
+      .s8 { display: none; }
+      .badge.bottom { top: calc(50% + 5.7rem); }
+      .cta-button {
+        min-width: 188px;
+        padding: 0.8rem 1rem;
+        font-size: 0.78rem;
+        letter-spacing: 0.05em;
+      }
+    }
+  
+    .page-transition-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      pointer-events: none;
+      opacity: 0;
+      transform: scale(1.04);
+      background:
+        radial-gradient(circle at 50% 44%, rgba(255,255,255,0.52), transparent 28%),
+        linear-gradient(135deg, rgba(255,216,77,0.98) 0%, rgba(29,216,255,0.98) 100%);
+      transition: opacity 0.42s ease, transform 0.42s ease;
+    }
+
+    .scene {
+      transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+                  opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+                  filter 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    body.page-is-entering .scene {
+      opacity: 0;
+      transform: translateY(28px) scale(0.985);
+      filter: blur(6px);
+    }
+
+    body.page-ready .scene {
+      opacity: 1;
+      transform: none;
+      filter: none;
+    }
+
+    body.page-leaving .scene {
+      opacity: 0;
+      transform: translateY(-10px) scale(0.985);
+      filter: blur(6px);
+    }
+
+    body.page-leaving .page-transition-layer {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+
+    .badge.top,
+    .badge.bottom {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @media (max-width: 720px) {
+      .badge.top {
+        display: inline-flex;
+        top: max(18px, env(safe-area-inset-top));
+        padding: 0.65rem 1rem;
+        font-size: 0.72rem;
+        letter-spacing: 0.08em;
+        z-index: 14;
+      }
+
+      .badge.bottom {
+        top: calc(50% + 7.8rem);
+      }
+
+      .cta-button {
+        min-width: 260px;
+        min-height: 64px;
+        padding: 0.95rem 1.4rem;
+        font-size: 1rem;
+        background: #ffffff;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .blob.left {
+        width: 11rem;
+        height: 11rem;
+        top: -2.6rem;
+        left: -2.8rem;
+      }
+
+      .blob.right {
+        width: 12rem;
+        height: 12rem;
+        right: -2.2rem;
+        bottom: -3.2rem;
+      }
+
+      .ring {
+        width: 96vmin;
+        height: 96vmin;
+      }
+
+      .burst-main {
+        width: 108vmin;
+        height: 74vmin;
+      }
+
+      .badge.top {
+        display: inline-flex;
+        top: max(14px, env(safe-area-inset-top));
+        padding: 0.58rem 0.9rem;
+        font-size: 0.68rem;
+        letter-spacing: 0.07em;
+      }
+
+      .badge.bottom {
+        top: calc(50% + 6.4rem);
+      }
+
+      .cta-button {
+        min-width: 236px;
+        min-height: 58px;
+        padding: 0.82rem 1.15rem;
+        font-size: 0.92rem;
+        border-width: 4px;
+        background: #ffffff;
+        box-shadow: 0 10px 0 rgba(20,35,58,0.12), 0 16px 24px rgba(20,35,58,0.12);
+      }
+
+      .icon-float.i1,
+      .icon-float.i2,
+      .s3,
+      .s4,
+      .s5,
+      .s6 {
+        display: none;
+      }
+
+      .s7,
+      .s8 {
+        display: block;
+        top: auto;
+        bottom: max(12px, env(safe-area-inset-bottom));
+        animation: none;
+      }
+
+      .s7 {
+        left: 12px;
+      }
+
+      .s8 {
+        right: 12px;
+      }
+
+      .s7 .sticker-card,
+      .s8 .sticker-card {
+        width: 58px;
+        height: 58px;
+        border-width: 4px;
+        border-radius: 18px;
+      }
+
+      .s7 svg,
+      .s8 svg {
+        width: 30px;
+        height: 30px;
+      }
+    }
+
+    @media (max-width: 430px) {
+      .center {
+        padding: 1rem 0.75rem;
+      }
+
+      .word-stage {
+        width: 96vw;
+      }
+
+      .word-plate {
+        inset: -0.55rem -0.75rem;
+        border-width: 3px;
+        border-radius: 18px;
+      }
+
+      .word,
+      .word-shadow {
+        font-size: clamp(46px, 13vw, 68px);
+        -webkit-text-stroke: 4px var(--ink);
+      }
+
+      .badge.top {
+        top: max(12px, env(safe-area-inset-top));
+        padding: 0.52rem 0.82rem;
+        font-size: 0.62rem;
+        letter-spacing: 0.06em;
+      }
+
+      .badge.bottom {
+        top: calc(50% + 5.4rem);
+      }
+
+      .cta-button {
+        min-width: 214px;
+        min-height: 54px;
+        padding: 0.74rem 1rem;
+        font-size: 0.84rem;
+        letter-spacing: 0.03em;
+      }
+
+      .mini-burst.b3,
+      .mini-burst.b4 {
+        display: none;
+      }
+
+      .s7 .sticker-card,
+      .s8 .sticker-card {
+        width: 54px;
+        height: 54px;
+        border-radius: 16px;
+      }
+
+      .s7 svg,
+      .s8 svg {
+        width: 28px;
+        height: 28px;
+      }
+    }
+
+    @media (max-width: 390px) {
+     .badge.top {
+     top: calc(50% - 7.1rem);
+     padding: 0.48rem 0.72rem;
+     font-size: 0.58rem;
+     letter-spacing: 0.06em;
+     z-index: 20;
+     }
+
+      .badge.bottom {
+        top: calc(50% + 5rem);
+      }
+
+      .cta-button {
+        min-width: 198px;
+        min-height: 50px;
+        padding: 0.68rem 0.9rem;
+        font-size: 0.78rem;
+      }
+
+      .word,
+      .word-shadow {
+        font-size: clamp(42px, 12.4vw, 60px);
+      }
+
+      .word-plate {
+        inset: -0.5rem -0.62rem;
+      }
+
+      .s7,
+      .s8 {
+        bottom: max(10px, env(safe-area-inset-bottom));
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="page-transition-layer" aria-hidden="true"></div>
+
+  <main class="scene">
+    <div class="blob left"></div>
+    <div class="blob right"></div>
+    <div class="ring"></div>
+
+    <div class="mini-burst b1"></div>
+    <div class="mini-burst b2"></div>
+    <div class="mini-burst b3"></div>
+    <div class="mini-burst b4"></div>
+
+    <div class="sticker s1">
+      <div class="sticker-card" title="Книга">
+        <svg viewBox="0 0 24 24" fill="none"><path class="icon-stroke" d="M4 6.5C4 5.12 5.12 4 6.5 4H10c1 0 1.9.4 2.54 1.05.65-.65 1.54-1.05 2.55-1.05h2.41C18.88 4 20 5.12 20 6.5V18c0 .55-.45 1-1 1h-3.91c-.95 0-1.85.38-2.52 1.05L12 20.62l-.57-.57A3.56 3.56 0 0 0 8.91 19H5c-.55 0-1-.45-1-1V6.5Z"/><path class="icon-stroke" d="M12.5 5.1V20"/><path class="icon-stroke" d="M7 8.5h2.5M7 11h2M14.5 8.5H17M14.5 11H16.5"/></svg>
+      </div>
+    </div>
+
+    <div class="sticker s2">
+      <div class="sticker-card" title="Карандаш">
+        <svg viewBox="0 0 24 24" fill="none"><path class="icon-stroke" d="M3 21l3-1 11-11-2-2L4 18l-1 3Z"/><path class="icon-stroke" d="M14 5l2 2"/><path class="icon-stroke" d="M17.5 3.5 20 6l-1.5 1.5L16 5l1.5-1.5Z"/></svg>
+      </div>
+    </div>
+
+    <div class="sticker s3">
+      <div class="sticker-card" title="Сертификат">
+        <svg viewBox="0 0 24 24" fill="none"><path class="icon-stroke" d="M7 4h10l3 3v9.5A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-10A2.5 2.5 0 0 1 6.5 4Z"/><path class="icon-stroke" d="M14 4v4h4"/><path class="icon-stroke" d="M8 11h8M8 14h5"/><path class="icon-stroke" d="M9.2 18.2 12 16.5l2.8 1.7-.75-3.18 2.45-2.1-3.22-.28L12 9.7l-1.28 2.94-3.22.28 2.45 2.1z"/></svg>
+      </div>
+    </div>
+
+    <div class="sticker s4">
+      <div class="sticker-card" title="Выпускная шапка">
+        <svg viewBox="0 0 24 24" fill="none"><path class="icon-stroke" d="M3 9.5 12 4l9 5.5-9 5.5-9-5.5Z"/><path class="icon-stroke" d="M6.5 12.1V15c0 1.7 2.47 3 5.5 3s5.5-1.3 5.5-3v-2.9"/><path class="icon-stroke" d="M21 9.5V14"/></svg>
+      </div>
+    </div>
+
+    <div class="sticker s5">
+      <div class="sticker-card" title="Доска">
+        <svg viewBox="0 0 24 24" fill="none"><rect class="icon-stroke" x="4" y="5" width="16" height="11" rx="2"/><path class="icon-stroke" d="M8 19h8"/><path class="icon-stroke" d="M10 16v3M14 16v3"/><path class="icon-stroke" d="M7.5 9h9M7.5 12h5"/></svg>
+      </div>
+    </div>
+
+    <div class="sticker s6">
+      <div class="sticker-card" title="План-конспект">
+        <svg viewBox="0 0 24 24" fill="none"><rect class="icon-stroke" x="5" y="4" width="14" height="16" rx="2"/><path class="icon-stroke" d="M8 8h7M8 12h7M8 16h4"/><path class="icon-stroke" d="M6.5 2.8h3M14.5 2.8h3"/></svg>
+      </div>
+    </div>
+
+    <div class="sticker s7">
+      <div class="sticker-card" title="Figma">
+        <svg viewBox="0 0 24 24" fill="none" aria-label="Figma icon">
+          <rect class="figma-stroke" x="7" y="3" width="5" height="5" rx="2.5" fill="#F24E1E"/>
+          <rect class="figma-stroke" x="12" y="3" width="5" height="5" rx="2.5" fill="#FF7262"/>
+          <rect class="figma-stroke" x="7" y="8" width="5" height="5" rx="2.5" fill="#A259FF"/>
+          <circle class="figma-stroke" cx="14.5" cy="10.5" r="2.5" fill="#1ABCFE"/>
+          <rect class="figma-stroke" x="7" y="13" width="5" height="5" rx="2.5" fill="#0ACF83"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="sticker s8">
+      <div class="sticker-card" title="Figma">
+        <svg viewBox="0 0 24 24" fill="none" aria-label="Figma icon">
+          <rect class="figma-stroke" x="7" y="3" width="5" height="5" rx="2.5" fill="#F24E1E"/>
+          <rect class="figma-stroke" x="12" y="3" width="5" height="5" rx="2.5" fill="#FF7262"/>
+          <rect class="figma-stroke" x="7" y="8" width="5" height="5" rx="2.5" fill="#A259FF"/>
+          <circle class="figma-stroke" cx="14.5" cy="10.5" r="2.5" fill="#1ABCFE"/>
+          <rect class="figma-stroke" x="7" y="13" width="5" height="5" rx="2.5" fill="#0ACF83"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="icon-float i1">
+      <svg viewBox="0 0 24 24" fill="none"><path class="white-stroke" d="M3 7h18M5 7l1 10h12l1-10M9 7V4h6v3M8 11h8M8 14h6"/></svg>
+    </div>
+
+    <div class="icon-float i2">
+      <svg viewBox="0 0 24 24" fill="none"><circle class="white-stroke" cx="7" cy="7" r="3"/><circle class="white-stroke" cx="17" cy="7" r="3"/><circle class="white-stroke" cx="7" cy="17" r="3"/><path class="white-stroke" d="M14 14h6v6h-6z"/></svg>
+    </div>
+
+    <div class="burst-main"><div class="inner"></div></div>
+
+    <div class="badge top">WELCOME</div>
+    <a href="registration.html" class="badge bottom cta-button">Перейти к регистрации</a>
+
+    <section class="center">
+      <div class="word-stage">
+        <div class="word-fit" id="wordFit">
+          <div class="word-shadow">DIZIGNERI</div>
+          <div class="word-plate"></div>
+          <h1 class="word" id="word" aria-label="DIZIGNERI"></h1>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const word = document.getElementById('word');
+    const wordFit = document.getElementById('wordFit');
+    const wordStage = document.querySelector('.word-stage');
+    const text = 'DIZIGNERI';
+
+    word.innerHTML = text
+      .split('')
+      .map((char, index) => {
+        const lift = (8 + ((index * 2) % 6)).toFixed(1);
+        const tilt = (((index % 3) - 1) * 1.4).toFixed(2);
+        return `<span class="letter" data-index="${index}" style="--lift:${lift}px; --tilt:${tilt}deg;">${char}</span>`;
+      })
+      .join('');
+
+    function fitWord() {
+      document.documentElement.style.setProperty('--word-fit-scale', '1');
+
+      requestAnimationFrame(() => {
+        const maxWidth = Math.min(window.innerWidth * 0.92, 1580);
+        const maxHeight = window.innerHeight * 0.24;
+        const naturalWidth = wordFit.offsetWidth;
+        const naturalHeight = wordFit.offsetHeight;
+
+        const scale = Math.min(
+          1,
+          maxWidth / Math.max(naturalWidth, 1),
+          maxHeight / Math.max(naturalHeight, 1)
+        );
+
+        document.documentElement.style.setProperty('--word-fit-scale', scale.toFixed(4));
+      });
+    }
+
+    const letters = Array.from(document.querySelectorAll('.letter'));
+    let lastIndex = -1;
+
+    function triggerBounce() {
+      let index = Math.floor(Math.random() * letters.length);
+      if (index === lastIndex) {
+        index = (index + 1 + Math.floor(Math.random() * (letters.length - 1))) % letters.length;
+      }
+      lastIndex = index;
+
+      const indices = [index];
+      if (Math.random() < 0.22) {
+        const neighbor = Math.max(0, Math.min(letters.length - 1, index + (Math.random() > 0.5 ? 1 : -1)));
+        if (!indices.includes(neighbor)) indices.push(neighbor);
+      }
+
+      indices.forEach((i) => {
+        const el = letters[i];
+        el.classList.remove('jump');
+        void el.offsetWidth;
+        el.classList.add('jump');
+      });
+
+      const delay = 450 + Math.random() * 1200;
+      setTimeout(triggerBounce, delay);
+    }
+
+    function initScene() {
+      fitWord();
+      triggerBounce();
+    }
+
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(initScene);
+    } else {
+      initScene();
+    }
+
+    window.addEventListener('resize', fitWord);
+
+    window.addEventListener('mousemove', (e) => {
+      const x = (e.clientX / window.innerWidth) * 100;
+      const y = (e.clientY / window.innerHeight) * 100;
+      document.body.style.setProperty('--mx', x + '%');
+      document.body.style.setProperty('--my', y + '%');
+    });
+  </script>
+
+  <script>
+    (function () {
+      const body = document.body;
+      body.classList.add('page-is-entering');
+
+      requestAnimationFrame(() => {
+        body.classList.add('page-ready');
+        body.classList.remove('page-is-entering');
+      });
+
+      document.querySelectorAll('a[href$=".html"]').forEach((link) => {
+        link.addEventListener('click', (event) => {
+          if (
+            event.defaultPrevented ||
+            event.button !== 0 ||
+            event.metaKey ||
+            event.ctrlKey ||
+            event.shiftKey ||
+            event.altKey ||
+            link.target === '_blank'
+          ) {
+            return;
+          }
+
+          const href = link.getAttribute('href');
+          if (!href || href.startsWith('#')) return;
+
+          event.preventDefault();
+          body.classList.add('page-leaving');
+
+          window.setTimeout(() => {
+            window.location.href = href;
+          }, 380);
+        });
+      });
+    })();
+  </script>
+
+</body>
+</html>
