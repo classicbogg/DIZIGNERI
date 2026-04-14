@@ -1,0 +1,10 @@
+Django==5.1.7
+djangorestframework==3.15.2
+openpyxl==3.1.5
+gunicorn==22.0.0
+uvicorn==0.34.0
+pytest==8.3.5
+pytest-django==4.11.1
+django-debug-toolbar==4.4.6
+psycopg[binary]==3.2.6
+python-dotenv==1.0.1
